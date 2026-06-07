@@ -58,7 +58,9 @@ app.use(cors({
       "http://127.0.0.1:5173",
       process.env.FRONTEND_URL,
       "https://lex-app.web.app",
-      "https://lex-app.firebaseapp.com"
+      "https://lex-app.firebaseapp.com",
+      "https://lex-ai-gg.web.app",
+      "https://lex-ai-gg.firebaseapp.com"
     ].filter(Boolean);
 
     const isLocalVite = /^http:\/\/(localhost|127\.0\.0\.1):517\d$/.test(origin || "");
