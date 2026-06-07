@@ -1,0 +1,44 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ─── Helper Functions ────────────────────────────────────────
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Extract user ID from path (assumes structure: documents/{userId}/{...})
+    function isOwner() {
+      return request.auth.uid == resource.name.split('/')[1];
+    }
+    
+    // Check file size (max 50MB)
+    function isValidSize() {
+      return request.resource.size <= 50 * 1024 * 1024;
+    }
+
+    // ─── User Documents Folder ──────────────────────────────────────
+    // Users can only upload/download their own documents
+    // Path: documents/{userId}/{sessionId}/{filename}
+    match /documents/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated() && isOwner();
+      allow write: if isAuthenticated() && 
+                      isOwner() && 
+                      isValidSize() &&
+                      request.resource.contentType.matches('application/.*|text/plain|image/.*');
+      allow create: if isAuthenticated() && 
+                       isOwner() && 
+                       isValidSize() &&
+                       request.resource.contentType.matches('application/.*|text/plain|image/.*');
+      allow delete: if isAuthenticated() && isOwner();
+    }
+
+    // ─── Default Deny ───────────────────────────────────────────────
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

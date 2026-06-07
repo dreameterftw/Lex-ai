@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper Functions ────────────────────────────────────────
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if user owns the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Check if user owns the session
+    function isSessionOwner(sessionId) {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/SESSIONS/$(sessionId)).data.userId == request.auth.uid;
+    }
+
+    // ─── USERS Collection ────────────────────────────────────────
+    // Users can only read/write their own documents
+    match /USERS/{userId} {
+      allow read: if isAuthenticated() && isOwner(userId);
+      allow write: if isAuthenticated() && isOwner(userId);
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // ─── SESSIONS Collection ────────────────────────────────────────
+    // Users can only access sessions they own
+    match /SESSIONS/{sessionId} {
+      allow read: if isAuthenticated() && isSessionOwner(sessionId);
+      allow write: if isAuthenticated() && isSessionOwner(sessionId);
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && isSessionOwner(sessionId);
+    }
+
+    // ─── DOCUMENTS Collection ────────────────────────────────────────
+    // Users can only access documents in their sessions
+    match /DOCUMENTS/{docId} {
+      allow read: if isAuthenticated() && 
+                     isSessionOwner(resource.data.sessionId);
+      allow write: if isAuthenticated() && 
+                      isSessionOwner(request.resource.data.sessionId);
+      allow create: if isAuthenticated() && 
+                       isSessionOwner(request.resource.data.sessionId);
+      allow delete: if isAuthenticated() && 
+                       isSessionOwner(resource.data.sessionId);
+    }
+
+    // ─── ALERTS Collection ──────────────────────────────────────────
+    // Users can only access their own alerts
+    match /ALERTS/{alertId} {
+      allow read: if isAuthenticated() && 
+                     resource.data.userId == request.auth.uid;
+      allow write: if isAuthenticated() && 
+                      request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && 
+                       resource.data.userId == request.auth.uid;
+    }
+
+    // ─── LIBRARY Collection ─────────────────────────────────────────
+    // Library articles are public, anyone can read
+    // Only admins/backend can write (via Firebase Admin SDK)
+    match /LIBRARY/{articleId} {
+      allow read: if true;
+      allow write: if false;  // Only admin SDK can write
+      allow create: if false; // Only admin SDK can create
+      allow delete: if false; // Only admin SDK can delete
+    }
+
+    // ─── OUTCOMES Collection ────────────────────────────────────────
+    // Only backend can write (via Admin SDK)
+    // Users cannot read outcomes of others
+    match /OUTCOMES/{outcomeId} {
+      allow read: if false;   // Analytics only via backend
+      allow write: if false;  // Only admin SDK can write
+      allow create: if false; // Only admin SDK can create
+      allow delete: if false; // Only admin SDK can delete
+    }
+
+    // ─── Default Deny ───────────────────────────────────────────────
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
