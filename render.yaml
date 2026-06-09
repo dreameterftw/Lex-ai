@@ -1,0 +1,21 @@
+# Render manifest for monorepo: backend (web) and frontend (static site)
+
+static_sites:
+  - name: lex-frontend
+    branch: main
+    buildCommand: cd lex-frontend && npm ci && npm run build
+    publishPath: lex-frontend/dist
+    autoDeploy: true
+
+services:
+  - type: web
+    name: lex-backend
+    env: node
+    branch: main
+    plan: free
+    buildCommand: cd lex-backend && npm ci
+    startCommand: cd lex-backend && npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production

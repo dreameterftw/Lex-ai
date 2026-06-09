@@ -1,3 +1,39 @@
+Render deployment steps
+
+1. Commit and push `render.yaml` and `lex-backend/Dockerfile` to your `main` branch.
+
+2. Connect your repository in Render (https://render.com) and allow it to read the repo; Render will detect `render.yaml` and create two services:
+   - Static Site `lex-frontend` (build: `cd lex-frontend && npm ci && npm run build`, publish path: `lex-frontend/dist`)
+   - Web Service `lex-backend` (build: `cd lex-backend && npm ci`, start: `cd lex-backend && npm start`) or using the provided `Dockerfile` for a containerized build
+
+3. Required environment variables (set these in Render dashboard for `lex-backend` service):
+   - `FIREBASE_PROJECT_ID`
+   - `FIREBASE_PRIVATE_KEY` (ensure newlines are preserved; Render supports multiline secrets)
+   - `FIREBASE_CLIENT_EMAIL`
+   - `GROQ_API_KEY`
+   - `RESEND_API_KEY`
+   - `FRONTEND_URL` (the static site URL; set after frontend is created)
+   - `NODE_ENV=production`
+   - `PORT` (optional; Render sets a port automatically via `PORT` environment variable)
+
+4. Security notes:
+   - Remove any committed secrets from git history if they were pushed (use `git filter-repo` or `BFG Repo-Cleaner`).
+   - Keep service account keys and `.env` files out of the repository.
+
+5. To redeploy manually: push to `main` or trigger a deploy in the Render dashboard.
+
+Local testing:
+
+```bash
+cd lex-backend
+npm ci
+npm start
+
+cd ../lex-frontend
+npm ci
+npm run build
+npm run preview # to preview the static site locally
+```
 # 🚀 Lex Complete Deployment on Render
 
 **Status:** Backend deployed ✅  
