@@ -33,6 +33,7 @@ import healthCheckRoutes from "./routes/healthCheck.js";
 import alertsRoutes from "./routes/alerts.js";
 import outcomeRoutes from "./routes/outcome.js";
 import libraryRoutes from "./routes/library.js";
+import contactRoutes from "./routes/contact.js";
 
 dotenv.config();
 
@@ -112,6 +113,7 @@ app.use("/api/health-check", healthCheckRoutes);
 app.use("/api/alerts", alertsRoutes);
 app.use("/api/outcome", outcomeRoutes);
 app.use("/api/library", libraryRoutes);
+app.use("/api/contact", contactRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────
 

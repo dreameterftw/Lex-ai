@@ -257,6 +257,7 @@ export default function LibraryPage() {
               </form>
             </div>
             {searchError && <p className="mt-4 text-sm text-destructive">{searchError}</p>}
+            {externalError && <p className="mt-4 text-sm text-muted-foreground">{externalError}</p>}
           </section>
 
           <section className="rounded-3xl border border-border bg-background p-6">

@@ -13,7 +13,7 @@ import {
   Plus,
   Scale,
 } from "lucide-react"
-import { getIdToken, logout } from "../firebase/auth.js"
+import { logout } from "../firebase/auth.js"
 import { createSession, getAllSessions } from "../api/sessionApi.js"
 import { getUnreadCount } from "../api/alertsApi.js"
 import { useAuthContext } from "../context/useAuthContext.js"
