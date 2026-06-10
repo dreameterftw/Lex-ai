@@ -1,19 +1,22 @@
-import client from "./client.js"
+import {
+  getArticle as getArticleService,
+  getArticlesByCategory as getArticlesByCategoryService,
+  getCategories as getCategoriesService,
+  searchArticles as searchArticlesService
+} from "../services/libraryService.js"
+import { apiResult } from "../services/firestoreService.js"
 
-export const getCategories = () =>
-  client.get("/api/library/categories")
+export const getCategories = async () => apiResult(getCategoriesService())
 
-export const getArticlesByCategory = (categoryId) =>
-  client.get(`/api/library/articles/${categoryId}`)
+export const getArticlesByCategory = async (categoryId) =>
+  apiResult(await getArticlesByCategoryService(categoryId))
 
-export const getArticle = (articleId) =>
-  client.get(`/api/library/article/${articleId}`)
+export const getArticle = async (articleId) =>
+  apiResult(await getArticleService(articleId))
 
-export const searchArticles = (query) =>
-  client.get(`/api/library/search?q=${encodeURIComponent(query)}`)
+export const searchArticles = async (query) =>
+  apiResult(await searchArticlesService(query))
 
-export const searchWikipedia = (query) =>
-  client.get(`/api/library/external/wikipedia/search?q=${encodeURIComponent(query)}`)
+export const searchWikipedia = async () => apiResult([])
 
-export const getWikipediaArticle = (title) =>
-  client.get(`/api/library/external/wikipedia/article?title=${encodeURIComponent(title)}`)
+export const getWikipediaArticle = async () => apiResult(null)

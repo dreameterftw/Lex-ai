@@ -37,3 +37,7 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Cloudflare wrangler
+.wrangler/
+.dev.vars

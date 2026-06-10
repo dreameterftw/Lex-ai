@@ -1,10 +1,6 @@
 {
-  "functions": {
-    "source": "lex-backend",
-    "runtime": "nodejs18",
-    "predeploy": [
-      "npm --prefix \"$RESOURCE_DIR\" install"
-    ]
+  "firestore": {
+    "rules": "firestore.rules"
   },
   "hosting": {
     "public": "lex-frontend/dist",
@@ -14,10 +10,6 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {
-        "source": "/api/**",
-        "function": "lexBackend"
-      },
       {
         "source": "**",
         "destination": "/index.html"

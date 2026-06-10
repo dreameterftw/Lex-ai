@@ -135,12 +135,28 @@ function ContactSection() {
     setStatus(null)
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/contact`, {
+      const workerUrl = import.meta.env.VITE_WORKER_URL
+      if (!workerUrl) {
+        throw new Error("VITE_WORKER_URL is not configured.")
+      }
+
+      const response = await fetch(`${workerUrl.replace(/\/$/, "")}/api/email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, message }),
+        body: JSON.stringify({
+          from: "onboarding@resend.dev",
+          to: email,
+          subject: `We received your message, ${name}`,
+          html: `
+            <h3>Thank you for reaching out, ${name}!</h3>
+            <p>We received your message and will get back to you soon.</p>
+            <hr />
+            <p><strong>Your message:</strong></p>
+            <p>${message.replace(/\n/g, "<br />")}</p>
+          `
+        }),
       })
 
       if (response.ok) {
