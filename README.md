@@ -49,16 +49,12 @@ lex/
 - Groq API key
 - Resend API key (for email features)
 
-### Backend Setup
+### Worker Setup
 
-bash
-cd lex-backend
-cp .env.example .env
-# Edit .env with your credentials
-npm install
-npm run dev
-
-Backend runs on http://localhost:5000
+cd cloudflare-worker
+wrangler secret put GROQ_API_KEY
+wrangler secret put RESEND_API_KEY
+wrangler deploy
 
 ### Frontend Setup
 
@@ -71,16 +67,10 @@ npm run dev
 Frontend runs on http://localhost:5173
 
 ### Environment Variables
-Backend (.env)
+Worker secrets
 
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_PRIVATE_KEY=your-private-key
-FIREBASE_CLIENT_EMAIL=your-service-account-email
 GROQ_API_KEY=your-groq-key
 RESEND_API_KEY=your-resend-key
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
 
 Frontend (.env)
 
@@ -91,7 +81,7 @@ VITE_FIREBASE_STORAGE_BUCKET=your-bucket.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
 VITE_FIREBASE_APP_ID=your-app-id
 VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
-VITE_BACKEND_URL=https://lex-backend-er7l.onrender.com
+VITE_WORKER_URL=https://lex-proxy-worker.YOUR-SUBDOMAIN.workers.dev
 
 ### Deployment
 
@@ -103,35 +93,19 @@ firebase deploy --only hosting
 
 Visit: https://lex-ai-gg.web.app
 
-Backend (Render)
+Worker (Cloudflare)
 
-cd lex-backend
-git push  # Render auto-deploys
+cd cloudflare-worker
+wrangler deploy
 
-Backend: https://lex-backend-er7l.onrender.com
+Worker: https://lex-proxy-worker.YOUR-SUBDOMAIN.workers.dev
 
-### API Endpoints
+### Worker Endpoints
 
-Public Endpoints
-GET /api/health - Health check
-Protected Endpoints (Firebase Auth required)
-POST /api/session - Create session
-POST /api/situation - Analyze situation
-POST /api/document - Analyze document
-POST /api/rights - Get rights info
-POST /api/deadlines - Track deadlines
-POST /api/counsel - Chat with AI
-POST /api/signal - Generate letter
-POST /api/timeline - Manage timeline
-POST /api/court-prep - Court prep brief
-POST /api/alerts - Manage alerts
-POST /api/outcome - Track outcomes
-GET /api/library - Search legal library
-Contact Endpoint
-POST /api/contact - Submit contact form
-Body: { name, email, message }
-Response: Stores in Firestore + attempts email via Resend
-Note: Email sending is non-critical; form data is always saved
+POST /api/chat - Proxies full Groq chat completion bodies and injects GROQ_API_KEY.
+POST /api/email - Proxies Resend email payloads and injects RESEND_API_KEY.
+
+Frontend data operations use the Firebase client SDK directly against Firestore.
 
 ### Security
 
@@ -157,7 +131,7 @@ PRE_DEPLOY_CHECKLIST.md — Local testing checklist
 ### Recent Updates
 
 Latest (v1.0.0)
-✅ Added secure contact form with backend /api/contact endpoint
+✅ Added secure contact form routed through the Cloudflare Worker
 ✅ Integrated Resend API for email confirmations
 ✅ Contact submissions stored in Firestore for data persistence
 ✅ Fixed all ESLint errors and linting issues
@@ -173,4 +147,8 @@ What you were trying to do
 Error message (if any)
 Steps to reproduce
 Built with ❤️ for legal clarity
-Status: Production • Frontend: https://lex-ai-gg.web.app • Backend: https://lex-backend-er7l.onrender.com
+Status: Production • Frontend: https://lex-ai-gg.web.app • AI Proxy: Cloudflare Worker
+
+## lex-backend
+
+The Express backend has been retired. All data operations now run directly against Firestore from the frontend. AI calls are proxied through a Cloudflare Worker. This folder is kept for reference only.
