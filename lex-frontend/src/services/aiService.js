@@ -46,6 +46,7 @@ export const callAI = async ({
 
 export const callAIWithHistory = async ({
   systemPrompt,
+  userPrompt,
   history = [],
   newMessage,
   model = CONSTANTS.MODELS.POWERFUL,
@@ -54,6 +55,7 @@ export const callAIWithHistory = async ({
 }) => {
   const messages = [
     { role: "system", content: systemPrompt },
+    ...(userPrompt ? [{ role: "user", content: userPrompt }] : []),
     ...history.flatMap((exchange) => [
       { role: "user", content: exchange.user },
       { role: "assistant", content: exchange.lex }

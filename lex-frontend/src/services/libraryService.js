@@ -62,25 +62,37 @@ export const LIBRARY_CATEGORIES = [
 export const getCategories = () => LIBRARY_CATEGORIES
 
 export const getArticlesByCategory = async (categoryId) => {
-  const articlesQuery = query(
-    collection(db, CONSTANTS.COLLECTIONS.LIBRARY),
-    where("category", "==", categoryId),
-    orderBy("publishedAt", "desc")
-  )
-  const snapshot = await getDocs(articlesQuery)
+  try {
+    // Query only by category to avoid requiring a composite index for orderBy
+    const articlesQuery = query(
+      collection(db, CONSTANTS.COLLECTIONS.LIBRARY),
+      where("category", "==", categoryId)
+    )
+    const snapshot = await getDocs(articlesQuery)
 
-  return snapshot.docs.map((articleDoc) => {
-    const data = articleDoc.data()
-    return {
-      articleId: articleDoc.id,
-      category: data.category,
-      title: data.title,
-      summary: data.summary,
-      readingTime: data.readingTime,
-      tags: data.tags,
-      publishedAt: data.publishedAt
-    }
-  })
+    const results = snapshot.docs.map((articleDoc) => {
+      const data = articleDoc.data()
+      return {
+        articleId: articleDoc.id,
+        category: data.category,
+        title: data.title,
+        summary: data.summary,
+        readingTime: data.readingTime,
+        tags: data.tags,
+        publishedAt: data.publishedAt
+      }
+    })
+
+    // Sort client-side by publishedAt (descending). This avoids Firestore composite index requirements.
+    return results.sort((a, b) => {
+      const ta = a.publishedAt ? Date.parse(a.publishedAt) || 0 : 0
+      const tb = b.publishedAt ? Date.parse(b.publishedAt) || 0 : 0
+      return tb - ta
+    })
+  } catch (err) {
+    console.error("Failed to fetch articles by category:", err)
+    return []
+  }
 }
 
 export const getArticle = async (articleId) => {

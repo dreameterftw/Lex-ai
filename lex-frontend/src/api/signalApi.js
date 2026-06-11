@@ -57,3 +57,19 @@ export const markLetterSent = async (sessionId) => {
 
   return apiResult({ success: true, sentDate: updatedSignal.sentDate })
 }
+
+export const updateRecipient = async (sessionId, recipient) => {
+  const user = requireUser()
+  const session = await getSession(sessionId, user.uid)
+  if (!session) throw new Error("Session not found.")
+
+  const signal = session.context?.signal || {}
+  const updatedSignal = {
+    ...signal,
+    recipient: String(recipient || ""),
+    completedAt: new Date().toISOString()
+  }
+
+  await updateContext(sessionId, user.uid, "signal", updatedSignal)
+  return apiResult(updatedSignal)
+}

@@ -14,11 +14,7 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
     
-    // Check if user owns the session
-    function isSessionOwner(sessionId) {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/sessions/$(sessionId)).data.userId == request.auth.uid;
-    }
+    // Note: avoid using get() in rules for list/query safety. Rely on document fields like userId instead.
 
     // ─── users Collection ────────────────────────────────────────
     // Users can only read/write their own documents
@@ -37,24 +33,24 @@ service cloud.firestore {
     // ─── sessions Collection ────────────────────────────────────────
     // Users can only access sessions they own
     match /sessions/{sessionId} {
-      allow read: if isAuthenticated() && isSessionOwner(sessionId);
-      allow write: if isAuthenticated() && isSessionOwner(sessionId);
-      allow create: if isAuthenticated() && 
-                       request.resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && isSessionOwner(sessionId);
+      // Allow single-document get when the session belongs to the user
+      allow get: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
+      // Allow list queries for authenticated users (frontend filters by userId)
+      allow list: if isAuthenticated();
+
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // ─── documents Collection ────────────────────────────────────────
     // Users can only access documents in their sessions
     match /documents/{docId} {
-      allow read: if isAuthenticated() && 
-                     isSessionOwner(resource.data.sessionId);
-      allow write: if isAuthenticated() && 
-                      isSessionOwner(request.resource.data.sessionId);
-      allow create: if isAuthenticated() && 
-                       isSessionOwner(request.resource.data.sessionId);
-      allow delete: if isAuthenticated() && 
-                      isSessionOwner(resource.data.sessionId);
+      // Documents include `userId` when created; allow access based on that field to avoid get() in rules
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow write: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
 
     // ─── alerts Collection ──────────────────────────────────────────

@@ -12,6 +12,7 @@ import {
   ShieldAlert,
   ChevronDown,
   ChevronUp,
+  ShieldCheck,
 } from "lucide-react"
 import { AppLayout } from "../components/layout/AppLayout.jsx"
 import { analyzeDocument } from "../api/documentApi.js"
@@ -19,32 +20,32 @@ import { getSession } from "../api/sessionApi.js"
 
 const SEVERITY_CONFIG = {
   High: {
-    border: "border-red-200",
-    bg: "bg-red-50",
-    badge: "bg-red-100 text-red-700 border-red-200",
-    icon: "text-red-500",
-    dot: "bg-red-500",
+    border: "border-destructive/30",
+    bg: "bg-destructive/5",
+    badge: "bg-destructive/10 text-destructive border-destructive/30",
+    dot: "bg-destructive",
+    label: "text-destructive",
   },
   Medium: {
-    border: "border-yellow-200",
-    bg: "bg-yellow-50/50",
-    badge: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    icon: "text-yellow-500",
-    dot: "bg-yellow-500",
+    border: "border-brass/30",
+    bg: "bg-brass/5",
+    badge: "bg-brass/10 text-brass border-brass/30",
+    dot: "bg-brass",
+    label: "text-brass",
   },
   Low: {
-    border: "border-green-200",
-    bg: "bg-green-50/30",
-    badge: "bg-green-100 text-green-700 border-green-200",
-    icon: "text-green-500",
-    dot: "bg-green-500",
+    border: "border-border",
+    bg: "bg-card",
+    badge: "bg-muted text-muted-foreground border-border",
+    dot: "bg-muted-foreground/50",
+    label: "text-muted-foreground",
   },
 }
 
 const RISK_CONFIG = {
-  High: "text-red-600 bg-red-50 border-red-200",
-  Medium: "text-yellow-600 bg-yellow-50 border-yellow-200",
-  Low: "text-green-600 bg-green-50 border-green-200",
+  High: "text-destructive bg-destructive/10 border-destructive/30",
+  Medium: "text-brass bg-brass/10 border-brass/30",
+  Low: "text-muted-foreground bg-muted border-border",
 }
 
 async function extractTextFromPDF(file) {
@@ -106,16 +107,13 @@ export default function DocumentPage() {
       try {
         const res = await getSession(sessionId)
         const documentContext = res.data?.context?.document
-        if (documentContext) {
-          setResult(documentContext)
-        }
+        if (documentContext) setResult(documentContext)
       } catch (err) {
         console.error(err)
       } finally {
         setFetching(false)
       }
     }
-
     load()
   }, [sessionId])
 
@@ -123,39 +121,32 @@ export default function DocumentPage() {
     e.preventDefault()
     setDragging(true)
   }
-
   const handleDragLeave = () => setDragging(false)
-
   const handleDrop = (e) => {
     e.preventDefault()
     setDragging(false)
     const dropped = e.dataTransfer.files?.[0]
     if (dropped) handleFile(dropped)
   }
-
   const handleFileInput = (e) => {
     const selected = e.target.files?.[0]
     if (selected) handleFile(selected)
   }
-
   const handleFile = (f) => {
     if (f.type !== "application/pdf") {
       setError("Please upload a PDF file.")
       return
     }
-
     if (f.size > 10 * 1024 * 1024) {
       setError("File too large. Maximum size is 10MB.")
       return
     }
-
     setFile(f)
     setError(null)
   }
 
   const handleAnalyze = async () => {
     if (!file) return
-
     setError(null)
     setExtracting(true)
 
@@ -185,11 +176,8 @@ export default function DocumentPage() {
   const toggleExpanded = (index) => {
     setExpanded((prev) => {
       const next = new Set(prev)
-      if (next.has(index)) {
-        next.delete(index)
-      } else {
-        next.add(index)
-      }
+      if (next.has(index)) next.delete(index)
+      else next.add(index)
       return next
     })
   }
@@ -204,6 +192,12 @@ export default function DocumentPage() {
     )
   }
 
+  const hasFlagged = result?.flaggedClauses?.length > 0
+  const severityCounts = { High: 0, Medium: 0, Low: 0 }
+  result?.flaggedClauses?.forEach((c) => {
+    if (severityCounts[c.severity] !== undefined) severityCounts[c.severity] += 1
+  })
+
   return (
     <AppLayout sessionId={sessionId} currentFeature="document">
       <div className="mb-10">
@@ -211,15 +205,15 @@ export default function DocumentPage() {
           Step 2 of 8.
         </p>
         <h1 className="mt-2 font-display text-3xl md:text-4xl">Document X-Ray</h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-xl">
+        <p className="mt-3 text-sm leading-relaxed text-muted-foreground max-w-2xl">
           Upload any legal document — lease, employment contract, NDA, court summons.
           LEX reads every clause and flags what is unfair, unusual, or potentially illegal.
         </p>
       </div>
 
       {!result ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-7 space-y-6">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
+          <div className="space-y-6 min-w-0">
             <div
               ref={dropRef}
               onDragOver={handleDragOver}
@@ -248,7 +242,7 @@ export default function DocumentPage() {
                   <div>
                     <p className="text-sm font-medium">{file.name}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB · Ready to analyze
+                      {(file.size / 1024 / 1024).toFixed(2)} MB · Ready to analyse
                     </p>
                   </div>
                   <button
@@ -279,14 +273,14 @@ export default function DocumentPage() {
             </div>
 
             {error && (
-              <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3">
+              <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3">
                 <XCircle className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
                 <p className="text-sm text-destructive">{error}</p>
               </div>
             )}
 
             {(extracting || analyzing) && (
-              <div className="rounded-xl border border-border bg-card px-5 py-4">
+              <div className="rounded-2xl border border-border bg-card px-5 py-4">
                 <div className="flex items-center gap-3">
                   <Loader2 className="h-4 w-4 animate-spin text-brass shrink-0" />
                   <div>
@@ -306,7 +300,7 @@ export default function DocumentPage() {
             {file && !extracting && !analyzing && (
               <button
                 onClick={handleAnalyze}
-                className="group w-full inline-flex items-center justify-between gap-4 rounded-xl bg-ink px-6 py-4 text-sm font-medium text-white transition-colors hover:bg-foreground"
+                className="group w-full inline-flex items-center justify-between gap-4 rounded-xl bg-ink px-6 py-4 text-sm font-medium text-background transition-colors hover:bg-foreground"
               >
                 <span>Analyse document</span>
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -321,21 +315,24 @@ export default function DocumentPage() {
             </button>
           </div>
 
-          <div className="lg:col-span-5 space-y-4">
-            <div className="rounded-xl border border-border bg-card p-5">
+          <aside className="space-y-4">
+            <div className="rounded-2xl border border-border bg-card p-5">
               <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">Privacy</p>
               <div className="flex items-start gap-3">
                 <ShieldAlert className="h-4 w-4 text-brass shrink-0 mt-0.5" strokeWidth={1.5} />
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Your PDF is read locally in your browser using PDF.js. The actual file <strong className="text-foreground">never leaves your device</strong>.
+                  Your PDF is read locally in your browser using PDF.js. The actual file{" "}
+                  <strong className="text-foreground">never leaves your device</strong>.
                   Only the extracted text is sent for analysis.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">What LEX looks for</p>
-              <div className="space-y-2">
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-3">
+                What LEX looks for
+              </p>
+              <ul className="space-y-2">
                 {[
                   "Clauses that waive your legal rights",
                   "Terms that are unusual or one-sided",
@@ -343,24 +340,30 @@ export default function DocumentPage() {
                   "Provisions that may be unenforceable",
                   "Points you could negotiate before signing",
                 ].map((item) => (
-                  <div key={item} className="flex items-center gap-2">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-brass shrink-0" />
-                    <p className="text-xs text-muted-foreground">{item}</p>
-                  </div>
+                  <li key={item} className="flex items-start gap-2">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-brass shrink-0 mt-0.5" />
+                    <p className="text-xs text-muted-foreground leading-relaxed">{item}</p>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
-          </div>
+          </aside>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          <div className="lg:col-span-8 space-y-6">
-            <div className="rounded-xl border border-border bg-card p-6">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div>
-                  <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Document type</p>
-                  <h2 className="mt-1 font-display text-2xl">{result.documentType}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{result.fileName}</p>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.6fr_1fr]">
+          <div className="space-y-6 min-w-0">
+            <div className="rounded-2xl border border-border bg-card p-6">
+              <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+                <div className="min-w-0">
+                  <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Document type
+                  </p>
+                  <h2 className="mt-1 font-display text-2xl break-words">
+                    {result.documentType || "Untitled document"}
+                  </h2>
+                  {result.fileName && (
+                    <p className="mt-1 text-sm text-muted-foreground truncate">{result.fileName}</p>
+                  )}
                 </div>
                 {result.overallRisk && (
                   <span
@@ -378,10 +381,12 @@ export default function DocumentPage() {
               )}
             </div>
 
-            {result.flaggedClauses?.length > 0 && (
+            {hasFlagged ? (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Flagged clauses</h3>
+                  <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    Flagged clauses
+                  </h3>
                   <div className="h-px flex-1 bg-border" />
                   <span className="text-xs text-muted-foreground">{result.flaggedClauses.length}</span>
                 </div>
@@ -392,25 +397,29 @@ export default function DocumentPage() {
                     const isExpanded = expanded.has(i)
 
                     return (
-                      <div key={i} className={`rounded-xl border ${config.border} ${config.bg}`}>
+                      <div key={i} className={`rounded-2xl border ${config.border} ${config.bg}`}>
                         <button
                           onClick={() => toggleExpanded(i)}
-                          className="w-full flex items-center gap-4 px-5 py-4 text-left"
+                          className="w-full grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 px-5 py-4 text-left"
                         >
-                          <span className={`h-2 w-2 rounded-full shrink-0 ${config.dot}`} />
-                          <div className="flex-1 min-w-0">
+                          <span className={`h-2 w-2 rounded-full ${config.dot}`} />
+                          <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-sm font-medium">{clause.clauseId}</span>
-                              <span className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${config.badge}`}>
+                              <span className="text-sm font-medium truncate">{clause.clauseId}</span>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full border font-medium ${config.badge}`}
+                              >
                                 {clause.severity}
                               </span>
                             </div>
-                            <p className="mt-0.5 text-xs text-muted-foreground truncate">{clause.issue}</p>
+                            <p className="mt-0.5 text-xs text-muted-foreground truncate">
+                              {clause.issue}
+                            </p>
                           </div>
                           {isExpanded ? (
-                            <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <ChevronUp className="h-4 w-4 text-muted-foreground" />
                           ) : (
-                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
                           )}
                         </button>
 
@@ -421,7 +430,7 @@ export default function DocumentPage() {
                                 <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">
                                   Original clause
                                 </p>
-                                <p className="text-xs font-mono leading-relaxed bg-background/60 rounded-lg px-3 py-2.5 text-muted-foreground">
+                                <p className="text-xs font-mono leading-relaxed bg-background/60 rounded-xl px-3 py-2.5 text-muted-foreground">
                                   "{clause.originalText}"
                                 </p>
                               </div>
@@ -438,13 +447,15 @@ export default function DocumentPage() {
                               <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-1.5">
                                 Why it's a problem
                               </p>
-                              <p className="text-sm leading-relaxed text-muted-foreground">{clause.issue}</p>
+                              <p className="text-sm leading-relaxed text-muted-foreground">
+                                {clause.issue}
+                              </p>
                             </div>
 
                             {clause.law && (
-                              <div className="flex items-center gap-2 rounded-lg bg-background/60 px-3 py-2">
-                                <Info className="h-3.5 w-3.5 text-brass shrink-0" />
-                                <p className="text-xs text-brass">{clause.law}</p>
+                              <div className="flex items-start gap-2 rounded-xl bg-background/60 px-3 py-2">
+                                <Info className="h-3.5 w-3.5 text-brass shrink-0 mt-0.5" />
+                                <p className="text-xs text-brass leading-relaxed">{clause.law}</p>
                               </div>
                             )}
                           </div>
@@ -454,19 +465,31 @@ export default function DocumentPage() {
                   })}
                 </div>
               </div>
+            ) : (
+              <div className="rounded-2xl border border-border bg-card p-8 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brass/10">
+                  <ShieldCheck className="h-6 w-6 text-brass" strokeWidth={1.4} />
+                </div>
+                <p className="mt-4 font-display text-lg">No clauses flagged</p>
+                <p className="mt-1 text-sm text-muted-foreground max-w-md mx-auto">
+                  LEX didn't find any unfair, unusual, or unenforceable clauses in this document.
+                </p>
+              </div>
             )}
 
             {result.missingProtections?.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Missing protections</h3>
+                  <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    Missing protections
+                  </h3>
                   <div className="h-px flex-1 bg-border" />
                 </div>
-                <div className="rounded-xl border border-border bg-card divide-y divide-border">
+                <div className="rounded-2xl border border-border bg-card divide-y divide-border">
                   {result.missingProtections.map((item, i) => (
                     <div key={i} className="flex items-start gap-3 px-5 py-4">
-                      <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0 mt-0.5" />
-                      <p className="text-sm">{item}</p>
+                      <AlertTriangle className="h-4 w-4 text-brass shrink-0 mt-0.5" />
+                      <p className="text-sm leading-relaxed">{item}</p>
                     </div>
                   ))}
                 </div>
@@ -476,14 +499,16 @@ export default function DocumentPage() {
             {result.userLeveragePoints?.length > 0 && (
               <div>
                 <div className="flex items-center gap-3 mb-4">
-                  <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Your leverage points</h3>
+                  <h3 className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                    Your leverage points
+                  </h3>
                   <div className="h-px flex-1 bg-border" />
                 </div>
-                <div className="rounded-xl border border-border bg-card divide-y divide-border">
+                <div className="rounded-2xl border border-border bg-card divide-y divide-border">
                   {result.userLeveragePoints.map((item, i) => (
                     <div key={i} className="flex items-start gap-3 px-5 py-4">
                       <CheckCircle2 className="h-4 w-4 text-brass shrink-0 mt-0.5" />
-                      <p className="text-sm">{item}</p>
+                      <p className="text-sm leading-relaxed">{item}</p>
                     </div>
                   ))}
                 </div>
@@ -503,7 +528,7 @@ export default function DocumentPage() {
               </button>
               <button
                 onClick={() => navigate(`/rights/${sessionId}`)}
-                className="group flex-1 inline-flex items-center justify-between gap-4 rounded-xl bg-ink px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-foreground"
+                className="group flex-1 inline-flex items-center justify-between gap-4 rounded-xl bg-ink px-5 py-3 text-sm font-medium text-background transition-colors hover:bg-foreground"
               >
                 Continue to Rights Navigator
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -511,20 +536,27 @@ export default function DocumentPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-4 space-y-4">
-            <div className="rounded-xl border border-border bg-card p-5">
-              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-4">Risk summary</p>
+          <aside className="space-y-4">
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-4">
+                Risk summary
+              </p>
               <div className="space-y-3">
-                {(["High", "Medium", "Low"]).map((sev) => {
-                  const count = result.flaggedClauses?.filter((c) => c.severity === sev).length || 0
+                {["High", "Medium", "Low"].map((sev) => {
+                  const count = severityCounts[sev]
                   const config = SEVERITY_CONFIG[sev]
                   return (
-                    <div key={sev} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${config.dot}`} />
-                        <span className="text-xs text-muted-foreground">{sev} severity</span>
+                    <div
+                      key={sev}
+                      className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`h-2 w-2 rounded-full shrink-0 ${config.dot}`} />
+                        <span className="text-xs text-muted-foreground truncate">
+                          {sev} severity
+                        </span>
                       </div>
-                      <span className="text-xs font-medium">
+                      <span className="text-xs font-medium tabular-nums">
                         {count} clause{count !== 1 ? "s" : ""}
                       </span>
                     </div>
@@ -533,18 +565,19 @@ export default function DocumentPage() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="rounded-2xl border border-border bg-card p-5">
               <div className="flex items-start gap-3">
                 <ShieldAlert className="h-4 w-4 text-brass shrink-0 mt-0.5" strokeWidth={1.5} />
                 <div>
                   <p className="text-xs font-medium">Your file stayed on your device</p>
                   <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
-                    Only the extracted text was sent for analysis. The PDF itself was never uploaded anywhere.
+                    Only the extracted text was sent for analysis. The PDF itself was never
+                    uploaded anywhere.
                   </p>
                 </div>
               </div>
             </div>
-          </div>
+          </aside>
         </div>
       )}
     </AppLayout>

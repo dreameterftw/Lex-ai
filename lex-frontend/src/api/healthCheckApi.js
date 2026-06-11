@@ -41,10 +41,15 @@ export const runHealthCheck = async (jurisdictionOrAnswers, maybeAnswers) => {
   const healthCheckResult = {
     id: `hc_${Date.now()}`,
     lastCheckDate: new Date().toISOString(),
+    timestamp: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
     exposures: parsed.exposures,
     recommendations: parsed.recommendations,
     areasToReview: parsed.areasToReview,
     overallHealthScore: parsed.overallHealthScore,
+    // backward-compatible fields expected by frontend
+    overallScore: parsed.overallHealthScore,
+    exposureCount: Array.isArray(parsed.exposures) ? parsed.exposures.length : 0,
     summary: parsed.summary,
     jurisdiction
   }

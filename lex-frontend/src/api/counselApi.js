@@ -13,9 +13,10 @@ export const sendMessage = async (sessionId, message) => {
 
   const cleanMessage = sanitizeInput(message, 1000)
   const { cleaned } = guardPrompt(cleanMessage)
-  const { systemPrompt } = buildCounselPrompts(session.context, cleaned)
+  const { systemPrompt, userPrompt } = buildCounselPrompts(session.context, cleaned)
   const aiResponse = await callAIWithHistory({
     systemPrompt,
+    userPrompt,
     history: session.context.counsel?.history || [],
     newMessage: cleaned,
     model: MODELS.lexCounsel.model,

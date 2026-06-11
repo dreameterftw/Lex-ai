@@ -8,8 +8,9 @@ import {
   FileText,
 } from "lucide-react"
 import { AppLayout } from "../components/layout/AppLayout.jsx"
-import { generateSignal, markLetterSent } from "../api/signalApi.js"
+import { generateSignal, markLetterSent, updateRecipient } from "../api/signalApi.js"
 import { getSession } from "../api/sessionApi.js"
+import { X, Clipboard } from "lucide-react"
 
 export default function SignalPage() {
   const { sessionId } = useParams()
@@ -19,6 +20,9 @@ export default function SignalPage() {
   const [generating, setGenerating] = useState(false)
   const [sending, setSending] = useState(false)
   const [signal, setSignal] = useState(null)
+  const [recipientDraft, setRecipientDraft] = useState("")
+  const [savingRecipient, setSavingRecipient] = useState(false)
+  const [showLetterModal, setShowLetterModal] = useState(false)
   const [contextReady, setContextReady] = useState(false)
   const [error, setError] = useState(null)
 
@@ -29,6 +33,7 @@ export default function SignalPage() {
         const signalContext = res.data?.context?.signal
         const rights = res.data?.context?.rights
         setSignal(signalContext || null)
+        setRecipientDraft(signalContext?.recipient || "")
         setContextReady(rights?.identified?.length > 0)
       } catch (err) {
         setError(err.message || "Failed to load Signal Letter context.")
@@ -65,6 +70,30 @@ export default function SignalPage() {
       setError(err.message || "Failed to mark the letter as sent.")
     } finally {
       setSending(false)
+    }
+  }
+
+  const handleSaveRecipient = async () => {
+    if (!signal) return
+    setSavingRecipient(true)
+    setError(null)
+
+    try {
+      const res = await updateRecipient(sessionId, recipientDraft)
+      setSignal(res.data)
+    } catch (err) {
+      setError(err.message || "Failed to save recipient.")
+    } finally {
+      setSavingRecipient(false)
+    }
+  }
+
+  const handleCopyLetter = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      // small feedback could be added later
+    } catch (e) {
+      // ignore copy failures silently
     }
   }
 
@@ -116,7 +145,25 @@ export default function SignalPage() {
 
                   <div className="rounded-2xl border border-border bg-background p-4">
                     <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Recipient</p>
-                    <p className="mt-2 text-sm">{signal.recipient}</p>
+                    {signal.sentDate ? (
+                      <p className="mt-2 text-sm">{signal.recipient}</p>
+                    ) : (
+                      <div className="mt-2 flex gap-3">
+                        <input
+                          value={recipientDraft}
+                          onChange={(e) => setRecipientDraft(e.target.value)}
+                          placeholder="Recipient name or organization"
+                          className="flex-1 rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none"
+                        />
+                        <button
+                          onClick={handleSaveRecipient}
+                          disabled={savingRecipient}
+                          className="rounded-xl border border-border bg-ink px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
+                        >
+                          {savingRecipient ? "Saving…" : "Save"}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-4">
@@ -148,7 +195,16 @@ export default function SignalPage() {
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Letter body</p>
                   <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                    {signal.body}
+                    {signal.body?.slice(0, 600) || ""}
+                  </div>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      onClick={() => setShowLetterModal(true)}
+                      className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium"
+                    >
+                      <Clipboard className="h-4 w-4 text-brass" />
+                      View full letter
+                    </button>
                   </div>
                 </div>
 
@@ -230,6 +286,42 @@ export default function SignalPage() {
           </aside>
         </div>
       )}
+      {showLetterModal && signal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-3xl rounded-2xl border border-border bg-background p-6 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-display text-xl">{signal.subject || signal.letterType || "Signal Letter"}</h2>
+              <button onClick={() => setShowLetterModal(false)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="mb-4 text-sm text-muted-foreground">
+              <p className="mb-2"><strong>To:</strong> {signal.recipient}</p>
+              <p className="mb-4 whitespace-pre-wrap">{signal.body}</p>
+              {signal.disclaimer && (
+                <p className="mt-4 text-xs text-muted-foreground">{signal.disclaimer}</p>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={async () => await handleCopyLetter(`${signal.subject}\n\nTo: ${signal.recipient}\n\n${signal.body}`)}
+                className="rounded-xl bg-ink px-4 py-3 text-sm font-medium text-white hover:bg-foreground"
+              >
+                Copy letter
+              </button>
+              <button
+                onClick={() => setShowLetterModal(false)}
+                className="rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-muted-foreground"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppLayout>
   )
 }
+
