@@ -11,7 +11,7 @@ lex/
 └── lex-frontend/ React + Vite SPA
 
 
-## Tech Stack
+## Tech Stack 
 
 | Layer | Technology |
 |---|---|
