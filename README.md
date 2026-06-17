@@ -2,153 +2,227 @@
 
 > The law protects everyone equally — but only if you know it exists.
 
-LEX is a web-based legal intelligence platform that helps ordinary people understand their legal situation, know their rights, and act before it's too late — without needing a lawyer.
+LEX is a web-based legal intelligence platform that helps ordinary people in India understand their legal situation, know their rights, and act before it's too late — without needing a lawyer.
 
-## Project Structure
+**Live:** [lex-ai-gg.web.app](https://lex-ai-gg.web.app)
 
-lex/
-├── lex-backend/ Node.js + Express API
-└── lex-frontend/ React + Vite SPA
+---
 
+## What LEX Does
 
-## Tech Stack
+Most people encounter legal problems — a landlord dispute, an unpaid salary, a police encounter, a consumer complaint — and have no idea what their rights are or what to do next. LEX closes that gap.
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, Vite 8, Framer Motion, Tailwind CSS, Lucide Icons |
-| Backend | Node.js ESM, Express.js |
-| Database | Firebase Firestore |
-| Auth | Firebase Authentication |
-| AI | Groq (Llama 3.3 70B + Llama 3.1 8B) |
-| Email | Resend API |
-| Hosting | Firebase Hosting (frontend) + Render (backend) |
+You describe your situation in plain English. LEX identifies the legal category, your rights, relevant deadlines, and generates formal correspondence — all specific to your state and jurisdiction in India.
+
+---
 
 ## Features
 
-✨ **Core AI Features:**
-- 🏠 **Situation Finder** - Describe your legal situation, get instant analysis
-- 📄 **Document X-Ray** - Upload contracts/agreements, get clause flagging
-- ⚖️ **Rights Navigator** - Identify your legal rights in seconds
-- ⏰ **Deadline Tracker** - Never miss a legal deadline
-- 💬 **Lex Counsel** - Chat with AI about your case
-- ✍️ **Signal Letter** - Generate formal rights assertion letters
-- 📊 **Case Timeline** - Auto-populate case events and milestones
-- 🎓 **Court Prep Brief** - Prepare for hearings with Q&A
-- 💚 **Legal Health Check** - Assess your legal readiness
-- 🔔 **Plain Law Alerts** - Get notified of legal updates
-- 📚 **Legal Library** - Search jurisdiction-specific law
-- 📋 **Outcome Tracker** - Record case results
-- 📧 **Contact Form** - Reach out with questions (responses stored securely)
+### AI-Powered Legal Tools
+| Feature | What it does |
+|---|---|
+| **Situation Finder** | Describe your problem, get instant legal classification and urgency assessment |
+| **Document X-Ray** | Upload a contract or agreement, get flagged clauses and missing protections |
+| **Rights Navigator** | Identify the specific legal rights that apply to your situation |
+| **Deadline Tracker** | Never miss a legal deadline — statutes of limitation, notice periods, filing windows |
+| **LEX Counsel** | Chat with AI about your case using your full session context |
+| **Signal Letter** | Generate a formal rights assertion or demand letter, ready to send |
+| **Case Timeline** | Auto-populate key events and milestones in your case |
+| **Court Prep Brief** | Prepare for a hearing with a customised Q&A |
+| **Legal Health Check** | Score your overall legal readiness across active situations |
+| **Plain Law Alerts** | Get notified of relevant legal updates |
+| **Outcome Tracker** | Record what happened after your case resolved |
+
+### Legal Library
+A plain-English knowledge base covering Indian law — jurisdiction-aware and built for people with no legal background.
+
+- **Articles** — plain-English explanations of tenant rights, employment law, police rights, consumer protection, and the court system
+- **Landmark Cases** — key Supreme Court judgments explained in plain English (D.K. Basu, Vishaka, Puttaswamy, Lalita Kumari, Maneka Gandhi)
+- **India vs World** — honest comparisons of where Indian law leads globally and where it falls short
+- **Know Your Laws** — quick-reference panel showing national laws and state-specific rules for Maharashtra, Delhi, Karnataka, and Tamil Nadu
+- **Search + shortcuts** — search any legal topic or use shortcut chips for common queries (FIR, tenant rights, salary, arrest rights)
+- **Filter by state and type** — surface articles most relevant to your location and content type
+
+---
+
+## Architecture
+
+LEX runs entirely serverless — no backend to maintain.
+
+```
+User → Firebase Auth → React SPA (Firebase Hosting)
+                              ↓
+                     Firestore (user data, library)
+                              ↓
+                   Cloudflare Worker (AI proxy)
+                              ↓
+                         Groq API (Llama 3.3 70B / 3.1 8B)
+```
+
+### Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite 8, Tailwind CSS v4, Framer Motion, Lucide Icons |
+| Database | Firebase Firestore |
+| Auth | Firebase Authentication |
+| AI | Groq — Llama 3.3 70B (complex) + Llama 3.1 8B (fast) |
+| AI Proxy | Cloudflare Worker (keeps API key out of the browser) |
+| Email | Resend API (via Cloudflare Worker) |
+| Hosting | Firebase Hosting |
+
+---
+
+## Project Structure
+
+```
+lex/
+├── lex-frontend/          React + Vite SPA
+│   ├── src/
+│   │   ├── pages/         One file per feature page
+│   │   ├── api/           Thin wrappers over services
+│   │   ├── services/      Firestore queries and business logic
+│   │   ├── components/    Layout and reusable UI
+│   │   ├── firebase/      Firebase init
+│   │   └── context/       Auth context
+│   └── scripts/           Firestore seed scripts
+│       └── content/       Library article content files
+├── cloudflare-worker/     AI + email proxy
+└── firestore.rules        Security rules
+```
+
+---
 
 ## Quick Start
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
-- Firebase project (with Firestore)
+- Node.js 20+
+- Firebase project with Firestore and Authentication enabled
 - Groq API key
 - Resend API key (for email features)
+- Cloudflare account (for the AI proxy worker)
 
-### Worker Setup
+### 1. Clone
 
+```bash
+git clone https://github.com/dreameterftw/Lex-ai.git
+cd Lex-ai
+```
+
+### 2. Frontend
+
+```bash
+cd lex-frontend
+cp .env.example .env
+# Fill in your Firebase config and worker URL
+npm install
+npm run dev
+```
+
+Runs at `http://localhost:5173`
+
+### 3. Cloudflare Worker
+
+```bash
 cd cloudflare-worker
 wrangler secret put GROQ_API_KEY
 wrangler secret put RESEND_API_KEY
 wrangler deploy
+```
 
-### Frontend Setup
+Copy the deployed worker URL into `VITE_WORKER_URL` in your frontend `.env`.
 
-cd lex-frontend
-cp .env.example .env
-# Edit .env with your Firebase config
-npm install
-npm run dev
+### 4. Seed the Legal Library (optional)
 
-Frontend runs on http://localhost:5173
+The library content is pre-seeded on the live site. To seed your own Firestore:
 
-### Environment Variables
-Worker secrets
+1. Temporarily open library write rules in Firestore console
+2. From `lex-frontend/`:
+   ```bash
+   node --use-system-ca --env-file=.env scripts/seedLibrary.js
+   ```
+3. Lock write rules back down (`allow write: if false`)
 
-GROQ_API_KEY=your-groq-key
-RESEND_API_KEY=your-resend-key
+Use `--clear` flag to wipe and re-seed: `scripts/seedLibrary.js --clear`
 
-Frontend (.env)
+---
 
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-domain.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-VITE_FIREBASE_STORAGE_BUCKET=your-bucket.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
-VITE_FIREBASE_APP_ID=your-app-id
-VITE_FIREBASE_MEASUREMENT_ID=your-measurement-id
-VITE_WORKER_URL=https://lex-proxy-worker.YOUR-SUBDOMAIN.workers.dev
+## Environment Variables
 
-### Deployment
+### Frontend (`lex-frontend/.env`)
 
-Frontend (Firebase Hosting)
+```
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+VITE_FIREBASE_MEASUREMENT_ID=
+VITE_WORKER_URL=https://your-worker.your-subdomain.workers.dev
+```
 
+### Cloudflare Worker secrets
+
+```bash
+wrangler secret put GROQ_API_KEY
+wrangler secret put RESEND_API_KEY
+```
+
+---
+
+## Deployment
+
+### Frontend → Firebase Hosting
+
+```bash
 cd lex-frontend
 npm run build
 firebase deploy --only hosting
+```
 
-Visit: https://lex-ai-gg.web.app
+### Worker → Cloudflare
 
-Worker (Cloudflare)
-
+```bash
 cd cloudflare-worker
 wrangler deploy
+```
 
-Worker: https://lex-proxy-worker.YOUR-SUBDOMAIN.workers.dev
+### Firestore rules
 
-### Worker Endpoints
+```bash
+firebase deploy --only firestore:rules
+```
 
-POST /api/chat - Proxies full Groq chat completion bodies and injects GROQ_API_KEY.
-POST /api/email - Proxies Resend email payloads and injects RESEND_API_KEY.
+---
 
-Frontend data operations use the Firebase client SDK directly against Firestore.
+## Security
 
-### Security
+- `.env` files excluded from git via `.gitignore`
+- No API keys in source code — Groq and Resend keys live only in Cloudflare Worker secrets
+- Firebase security rules enforce per-user data ownership
+- Library collection is read-public, write-denied to all client SDK calls (seeding requires Admin SDK or temporary rule unlock)
+- Input validation on all user-facing endpoints
+- CORS configured for production domain only
 
-✅ .env files protected by .gitignore
-✅ No hardcoded API keys in source
-✅ API keys stored securely in backend .env
-✅ Firebase security rules enforce data ownership
-✅ Rate limiting on all routes
-✅ Input validation on all user endpoints
-✅ CORS configured for production domains
-✅ Contact form submissions stored in Firestore
-✅ Email API key never exposed to frontend
-See SECURITY_AUDIT_REPORT.md for full security audit.
+---
 
-### Documentation
+## Legal Library Content
 
-DEPLOYMENT_RUNBOOK.md — Step-by-step deployment guide
-DEPLOYMENT_FIREBASE.md — Firebase-specific deployment
-DEPLOYMENT_RENDER.md — Render backend deployment
-SECURITY_AUDIT_REPORT.md — Complete security audit
-PRE_DEPLOY_CHECKLIST.md — Local testing checklist
+The library ships with 20 seeded documents covering:
 
-### Recent Updates
+**Articles (12):** tenant rights, landlord utilities, security deposit recovery, wage theft, probation termination, POSH/workplace harassment, FIR refusal, arrest rights, Indian court system, Lok Adalat, Fundamental Rights, free legal aid
 
-Latest (v1.0.0)
-✅ Added secure contact form routed through the Cloudflare Worker
-✅ Integrated Resend API for email confirmations
-✅ Contact submissions stored in Firestore for data persistence
-✅ Fixed all ESLint errors and linting issues
-✅ Standardized section heading font sizes
-✅ Added visual section divider between capabilities and supporting suite
-✅ Repositioned contact form above footer
+**Landmark Cases (5):** D.K. Basu v. West Bengal, Vishaka v. Rajasthan, Puttaswamy v. Union of India, Lalita Kumari v. UP, Maneka Gandhi v. Union of India
 
-### Support
+**India vs World (3):** where India leads globally, where it falls short, consumer rights comparison
 
-For issues, check the docs first, then create a GitHub issue with:
+To add more content, edit files in `lex-frontend/scripts/content/` and re-run the seed script.
 
-What you were trying to do
-Error message (if any)
-Steps to reproduce
-Built with ❤️ for legal clarity
-Status: Production • Frontend: https://lex-ai-gg.web.app • AI Proxy: Cloudflare Worker
+---
 
-## lex-backend
+## Status
 
-The Express backend has been retired. All data operations now run directly against Firestore from the frontend. AI calls are proxied through a Cloudflare Worker. This folder is kept for reference only.
+**Production** · [lex-ai-gg.web.app](https://lex-ai-gg.web.app)
+
+Built for legal clarity — because the law only works for people who know it exists.

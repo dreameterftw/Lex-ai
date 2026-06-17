@@ -88,9 +88,43 @@ export default function ArticlePage() {
         ) : (
           <div className="rounded-3xl border border-border bg-card p-8 space-y-6">
             <div>
-              <p className="text-sm text-muted-foreground">{article.category?.replace(/-/g, " ")}</p>
-              <h1 className="mt-3 text-3xl font-display">{article.title}</h1>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{article.summary}</p>
+              {/* Meta row */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-border bg-secondary px-2.5 py-0.5 text-[10px] font-medium capitalize text-secondary-foreground">
+                  {article.category?.replace(/-/g, " ")}
+                </span>
+                {article.type === "landmark-case" && (
+                  <span className="rounded-full border border-brass/20 bg-brass/10 px-2.5 py-0.5 text-[10px] font-medium text-brass">
+                    Landmark Case
+                  </span>
+                )}
+                {article.type === "comparison" && (
+                  <span className="rounded-full border border-border bg-muted px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    India vs World
+                  </span>
+                )}
+                {article.readingTime && (
+                  <span className="text-[10px] text-muted-foreground">{article.readingTime} read</span>
+                )}
+                {article.difficulty && (
+                  <span className="text-[10px] text-muted-foreground">· {article.difficulty}</span>
+                )}
+                {article.year && (
+                  <span className="text-[10px] text-muted-foreground">· {article.year}</span>
+                )}
+                {article.court && (
+                  <span className="text-[10px] text-muted-foreground">· {article.court}</span>
+                )}
+              </div>
+              <h1 className="mt-4 font-display text-3xl leading-tight">{article.title}</h1>
+              {article.subtitle && (
+                <p className="mt-1 text-base text-muted-foreground">{article.subtitle}</p>
+              )}
+              {article.summary && (
+                <div className="mt-5 rounded-xl border border-brass/20 bg-brass/5 p-4">
+                  <p className="text-sm leading-relaxed text-foreground">{article.summary}</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">{renderMarkdown(article.content)}</div>
