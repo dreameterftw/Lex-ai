@@ -389,10 +389,24 @@ export default function LandingPage() {
           <nav className="relative z-10 flex items-center justify-between px-5 py-5 text-white md:px-10 md:py-7">
             <LexMark />
             <ul className="hidden items-center gap-8 text-sm md:flex">
-              <li><a href="#features" className="hover:text-brass-soft transition-colors">Features</a></li>
-              <li><a href="#how" className="hover:text-brass-soft transition-colors">How it Works</a></li>
-              <li><a href="#principles" className="hover:text-brass-soft transition-colors">Principles</a></li>
-              <li><a href="#contact" className="hover:text-brass-soft transition-colors">Contact</a></li>
+              {[
+                { label: "Features",     id: "features"   },
+                { label: "How it Works", id: "how"        },
+                { label: "Principles",   id: "principles" },
+                { label: "Contact",      id: "contact"    },
+              ].map(({ label, id }) => (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    }}
+                    className="hover:text-brass-soft transition-colors cursor-pointer bg-transparent border-0 p-0 text-white text-sm"
+                  >
+                    {label}
+                  </button>
+                </li>
+              ))}
             </ul>
             <Link to="/dashboard" className="group inline-flex items-center gap-2 rounded-md border border-white/30 bg-white/5 px-3.5 py-2 text-xs font-medium text-white backdrop-blur-sm transition-all hover:bg-white/15 md:px-4 md:text-sm">
               Open LEX
