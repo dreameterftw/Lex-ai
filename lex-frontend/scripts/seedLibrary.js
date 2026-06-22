@@ -29,6 +29,13 @@ import { policeRightsArticles }    from "./content/policeRights.js"
 import { legalSystemArticles }     from "./content/legalSystem.js"
 import { landmarkCases }           from "./content/landmarkCases.js"
 import { indiaVsWorldArticles }    from "./content/indiaVsWorld.js"
+import { situationArticles }       from "./content/situations.js"
+import { realCases }               from "./content/realCases.js"
+import { rentingHousingExtendedArticles } from "./content/rentingHousingExtended.js"
+import { workEmploymentExtendedArticles } from "./content/workEmploymentExtended.js"
+import { consumerRightsArticles }  from "./content/consumerRights.js"
+import { familyLawArticles }       from "./content/familyLaw.js"
+import { policeCriminalArticles }  from "./content/policeCriminal.js"
 
 // ── Firebase config (reads VITE_ vars from .env via --env-file) ───────────────
 const firebaseConfig = {
@@ -67,7 +74,14 @@ const ALL_CONTENT = [
   ...policeRightsArticles,
   ...legalSystemArticles,
   ...landmarkCases,
-  ...indiaVsWorldArticles
+  ...indiaVsWorldArticles,
+  ...situationArticles,
+  ...realCases,
+  ...rentingHousingExtendedArticles,
+  ...workEmploymentExtendedArticles,
+  ...consumerRightsArticles,
+  ...familyLawArticles,
+  ...policeCriminalArticles
 ]
 
 // ── Type icons for nicer console output ───────────────────────────────────────

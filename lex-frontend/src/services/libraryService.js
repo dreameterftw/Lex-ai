@@ -60,6 +60,16 @@ export const LIBRARY_CATEGORIES = [
     id: "legal-system",
     title: "How the Legal System Works",
     description: "Courts, free legal aid, Lok Adalat, your constitutional rights"
+  },
+  {
+    id: "family-law",
+    title: "Family & Personal Law",
+    description: "Divorce, child custody, domestic violence, inheritance, senior citizen rights"
+  },
+  {
+    id: "digital-privacy",
+    title: "Digital & Privacy Rights",
+    description: "Cybercrime, identity theft, data protection, online fraud"
   }
 ]
 
