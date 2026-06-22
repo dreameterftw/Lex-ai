@@ -190,12 +190,7 @@ function ContactSection() {
             <p className="mt-4 max-w-sm text-base leading-relaxed text-muted-foreground">
               Send us your query — about a feature, your situation, or how LEX can help. We reply within one business day.
             </p>
-            <div className="mt-8 flex items-center gap-3 text-sm">
-              <Mail className="h-4 w-4 text-brass" strokeWidth={1.5} />
-              <a href="mailto:hello@lex-app.web.app" className="hover:text-brass transition-colors">
-                hello@lex-app.web.app
-              </a>
-            </div>
+
           </div>
 
           <form onSubmit={handleSubmit} className="md:col-span-7 md:border-l md:border-border md:pl-12">
