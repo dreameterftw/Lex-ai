@@ -36,6 +36,7 @@ import { workEmploymentExtendedArticles } from "./content/workEmploymentExtended
 import { consumerRightsArticles }  from "./content/consumerRights.js"
 import { familyLawArticles }       from "./content/familyLaw.js"
 import { policeCriminalArticles }  from "./content/policeCriminal.js"
+import { digitalPrivacyArticles }  from "./content/digitalPrivacy.js"
 
 // ── Firebase config (reads VITE_ vars from .env via --env-file) ───────────────
 const firebaseConfig = {
@@ -81,7 +82,8 @@ const ALL_CONTENT = [
   ...workEmploymentExtendedArticles,
   ...consumerRightsArticles,
   ...familyLawArticles,
-  ...policeCriminalArticles
+  ...policeCriminalArticles,
+  ...digitalPrivacyArticles
 ]
 
 // ── Type icons for nicer console output ───────────────────────────────────────

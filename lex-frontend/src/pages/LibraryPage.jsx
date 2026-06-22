@@ -290,7 +290,8 @@ export default function LibraryPage() {
       { id: "police-rights",      title: "Police & Rights" },
       { id: "legal-system",       title: "Legal System" },
       { id: "debt-consumer",      title: "Consumer & Debt" },
-      { id: "family-relationships", title: "Family Law" },
+      { id: "family-law",         title: "Family Law" },
+      { id: "digital-privacy",    title: "Digital & Privacy" },
     ]
     setAllCategories(res)
     setSelectedCategory(res[0].id)
