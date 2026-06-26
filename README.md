@@ -5,7 +5,7 @@
 LEX is a web-based legal intelligence platform that helps ordinary people in India understand their legal situation, know their rights, and act before it's too late — without needing a lawyer.
 
 **Live:** [lex-ai-gg.web.app](https://lex-ai-gg.web.app)
-
+ 
 ---
 
 ## What LEX Does
