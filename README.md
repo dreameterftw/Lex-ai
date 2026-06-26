@@ -9,7 +9,7 @@ LEX is a web-based legal intelligence platform that helps ordinary people in Ind
 ---
 
 ## What LEX Does
-
+ 
 Most people encounter legal problems — a landlord dispute, an unpaid salary, a police encounter, a consumer complaint — and have no idea what their rights are or what to do next. LEX closes that gap.
 
 You describe your situation in plain English. LEX identifies the legal category, your rights, relevant deadlines, and generates formal correspondence — all specific to your state and jurisdiction in India.
