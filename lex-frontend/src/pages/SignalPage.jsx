@@ -33,7 +33,7 @@ export default function SignalPage() {
         const signalContext = res.data?.context?.signal
         const rights = res.data?.context?.rights
         setSignal(signalContext || null)
-        setRecipientDraft(signalContext?.recipient || "")
+        setRecipientDraft(signalContext?.recipient || signalContext?.letterContent?.recipient || "")
         setContextReady(rights?.identified?.length > 0)
       } catch (err) {
         setError(err.message || "Failed to load Signal Letter context.")
@@ -97,6 +97,17 @@ export default function SignalPage() {
     }
   }
 
+  const displaySignal = signal ? {
+    ...signal,
+    subject: signal.subject || signal.letterContent?.subject || "",
+    recipient: signal.recipient || signal.letterContent?.recipient || "",
+    requestedAction: signal.requestedAction || signal.letterContent?.requestedAction || "",
+    responseDeadline: signal.responseDeadline || signal.letterContent?.responseDeadline || "",
+    legalCitations: signal.legalCitations || signal.letterContent?.legalCitations || [],
+    body: signal.body || signal.letterContent?.body || "",
+    disclaimer: signal.disclaimer || signal.letterContent?.disclaimer || ""
+  } : null
+
   return (
     <AppLayout sessionId={sessionId} currentFeature="signal">
       <div className="mb-10">
@@ -116,7 +127,7 @@ export default function SignalPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-7 space-y-6">
-            {!signal ? (
+            {!displaySignal ? (
               <div className="rounded-xl border border-border bg-card p-6">
                 <div className="flex items-start gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-brass/10">
@@ -138,15 +149,15 @@ export default function SignalPage() {
                       <FileText className="h-5 w-5 text-brass" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{signal.letterType}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{signal.subject}</p>
+                      <p className="text-sm font-medium">{displaySignal.letterType}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{displaySignal.subject}</p>
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-border bg-background p-4">
                     <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Recipient</p>
-                    {signal.sentDate ? (
-                      <p className="mt-2 text-sm">{signal.recipient}</p>
+                    {displaySignal.sentDate ? (
+                      <p className="mt-2 text-sm">{displaySignal.recipient}</p>
                     ) : (
                       <div className="mt-2 flex gap-3">
                         <input
@@ -169,17 +180,17 @@ export default function SignalPage() {
                   <div className="space-y-4">
                     <div>
                       <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Requested action</p>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{signal.requestedAction}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{displaySignal.requestedAction}</p>
                     </div>
                     <div>
                       <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Response deadline</p>
-                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{signal.responseDeadline}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{displaySignal.responseDeadline}</p>
                     </div>
-                    {signal.legalCitations?.length > 0 && (
+                    {displaySignal.legalCitations?.length > 0 && (
                       <div>
                         <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Exact laws cited</p>
                         <div className="mt-2 space-y-2">
-                          {signal.legalCitations.map((law, index) => (
+                          {displaySignal.legalCitations.map((law, index) => (
                             <p key={index} className="text-sm text-muted-foreground">• {law}</p>
                           ))}
                         </div>
@@ -190,12 +201,12 @@ export default function SignalPage() {
               </div>
             )}
 
-            {signal && (
+            {displaySignal && (
               <div className="rounded-3xl border border-border bg-background p-6 space-y-5">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Letter body</p>
                   <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-                    {signal.body?.slice(0, 600) || ""}
+                    {displaySignal.body?.slice(0, 600) || ""}
                   </div>
                   <div className="mt-3 flex items-center gap-3">
                     <button
@@ -208,10 +219,10 @@ export default function SignalPage() {
                   </div>
                 </div>
 
-                {signal.disclaimer && (
+                {displaySignal.disclaimer && (
                   <div className="rounded-2xl border border-border bg-card p-4">
                     <p className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mb-2">Legal disclaimer</p>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{signal.disclaimer}</p>
+                    <p className="text-sm leading-relaxed text-muted-foreground">{displaySignal.disclaimer}</p>
                   </div>
                 )}
               </div>
@@ -235,16 +246,16 @@ export default function SignalPage() {
                     <Loader2 className="h-4 w-4 animate-spin" />
                   </>
                 ) : (
-                  <span>{signal ? "Regenerate letter" : "Generate letter"}</span>
+                  <span>{displaySignal ? "Regenerate letter" : "Generate letter"}</span>
                 )}
               </button>
-              {signal && (
+              {displaySignal && (
                 <button
                   onClick={handleMarkSent}
-                  disabled={sending || !!signal.sentDate}
+                  disabled={sending || !!displaySignal.sentDate}
                   className="flex-1 inline-flex items-center justify-center gap-3 rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium text-foreground transition-colors hover:border-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {sending ? "Marking sent…" : signal.sentDate ? "Letter sent" : "Mark letter sent"}
+                  {sending ? "Marking sent…" : displaySignal.sentDate ? "Letter sent" : "Mark letter sent"}
                 </button>
               )}
             </div>
@@ -286,27 +297,27 @@ export default function SignalPage() {
           </aside>
         </div>
       )}
-      {showLetterModal && signal && (
+      {showLetterModal && displaySignal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="w-full max-w-3xl rounded-2xl border border-border bg-background p-6 shadow-xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xl">{signal.subject || signal.letterType || "Signal Letter"}</h2>
+              <h2 className="font-display text-xl">{displaySignal.subject || displaySignal.letterType || "Signal Letter"}</h2>
               <button onClick={() => setShowLetterModal(false)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="mb-4 text-sm text-muted-foreground">
-              <p className="mb-2"><strong>To:</strong> {signal.recipient}</p>
-              <p className="mb-4 whitespace-pre-wrap">{signal.body}</p>
-              {signal.disclaimer && (
-                <p className="mt-4 text-xs text-muted-foreground">{signal.disclaimer}</p>
+              <p className="mb-2"><strong>To:</strong> {displaySignal.recipient}</p>
+              <p className="mb-4 whitespace-pre-wrap">{displaySignal.body}</p>
+              {displaySignal.disclaimer && (
+                <p className="mt-4 text-xs text-muted-foreground">{displaySignal.disclaimer}</p>
               )}
             </div>
 
             <div className="flex gap-3">
               <button
-                onClick={async () => await handleCopyLetter(`${signal.subject}\n\nTo: ${signal.recipient}\n\n${signal.body}`)}
+                onClick={async () => await handleCopyLetter(`${displaySignal.subject}\n\nTo: ${displaySignal.recipient}\n\n${displaySignal.body}`)}
                 className="rounded-xl bg-ink px-4 py-3 text-sm font-medium text-white hover:bg-foreground"
               >
                 Copy letter

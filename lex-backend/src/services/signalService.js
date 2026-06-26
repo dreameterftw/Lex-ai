@@ -38,6 +38,13 @@ export const generateSignalLetter = async (sessionId, userId) => {
     letterGenerated: true,
     letterContent: parsed,
     letterType: parsed.letterType,
+    subject: parsed.subject,
+    recipient: parsed.recipient,
+    requestedAction: parsed.requestedAction,
+    responseDeadline: parsed.responseDeadline,
+    legalCitations: parsed.legalCitations,
+    body: parsed.body,
+    disclaimer: parsed.disclaimer,
     sentDate: null,
     completedAt: new Date().toISOString()
   };

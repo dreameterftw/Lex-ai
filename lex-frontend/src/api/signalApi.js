@@ -24,6 +24,13 @@ export const generateSignal = async (sessionId) => {
     letterGenerated: true,
     letterContent: parsed,
     letterType: parsed.letterType,
+    subject: parsed.subject,
+    recipient: parsed.recipient,
+    requestedAction: parsed.requestedAction,
+    responseDeadline: parsed.responseDeadline,
+    legalCitations: parsed.legalCitations,
+    body: parsed.body,
+    disclaimer: parsed.disclaimer,
     sentDate: null,
     completedAt: new Date().toISOString()
   }
@@ -64,9 +71,14 @@ export const updateRecipient = async (sessionId, recipient) => {
   if (!session) throw new Error("Session not found.")
 
   const signal = session.context?.signal || {}
+  const letterContent = signal.letterContent || {}
   const updatedSignal = {
     ...signal,
     recipient: String(recipient || ""),
+    letterContent: {
+      ...letterContent,
+      recipient: String(recipient || "")
+    },
     completedAt: new Date().toISOString()
   }
 
