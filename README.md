@@ -7,7 +7,7 @@ LEX is a web-based legal intelligence platform that helps ordinary people in Ind
 **Live:** [lex-ai-gg.web.app](https://lex-ai-gg.web.app)
  
 ---
-
+ 
 ## What LEX Does
  
 Most people encounter legal problems — a landlord dispute, an unpaid salary, a police encounter, a consumer complaint — and have no idea what their rights are or what to do next. LEX closes that gap.
