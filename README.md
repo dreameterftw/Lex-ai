@@ -220,7 +220,7 @@ The library ships with 20 seeded documents covering:
 To add more content, edit files in `lex-frontend/scripts/content/` and re-run the seed script.
 
 ---
-
+ 
 ## Status
 
 **Production** · [lex-ai-gg.web.app](https://lex-ai-gg.web.app)
