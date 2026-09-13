@@ -6,7 +6,7 @@ LEX is a web-based legal intelligence platform that helps ordinary people in Ind
 
 **Live:** [lex-ai-gg.web.app](https://lex-ai-gg.web.app)
  
----
+--- 
  
 ## What LEX Does
  
