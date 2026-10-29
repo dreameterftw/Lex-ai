@@ -1,5 +1,5 @@
 # LEX — Legal Clarity for Everyone
-
+ 
 > The law protects everyone equally — but only if you know it exists.
 
 LEX is a web-based legal intelligence platform that helps ordinary people in India understand their legal situation, know their rights, and act before it's too late — without needing a lawyer.
